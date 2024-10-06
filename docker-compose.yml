@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  backend:
+    container_name: info-5940-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"  # Backend port
+    volumes:
+      - ./backend:/workspace
+    env_file:
+      - .env
+    networks:
+      - assignment_1_network
+
+  frontend:
+    container_name: info-5940-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"  # Expose frontend port 
+    volumes:
+      - ./frontend:/workspace
+    env_file:
+      - .env
+    networks:
+      - assignment_1_network
+
+networks:
+  assignment_1_network:
+    driver: bridge
+  
+
