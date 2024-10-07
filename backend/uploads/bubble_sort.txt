@@ -1,1 +1,26 @@
-Hello
+class QuickSort:
+	def __init__(self):
+
+	def quick_sort(self, array, left, right):
+		if left < right:
+			pivotIndex = self.partition(array, left, right)
+			self.quick_sort(array, left, pivotIndex-1)
+			self.quick_sort(array, pivotIndex+1, right)
+
+	def partition(array, left, right):
+		
+		pivot = array[right]
+
+		i = left - 1 #used to put our pivot
+
+		for j in range(left, right):
+			if array[j] < pivot:
+				i += 1
+				array[i], array[j] = array[j], array[i]
+
+		i += 1
+
+		array[right], array[i] = array[i], array[right]
+		
+		return i
+
