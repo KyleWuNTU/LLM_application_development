@@ -45,13 +45,14 @@ class DocumentProcessor:
             # Split the documents into chunks
             text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
             chunks = text_splitter.split_documents(documents)
-            logger.info(f"Chunk example: {chunks[0].page_content if chunks else 'No chunks'}")
 
             timestamp = datetime.now().isoformat()
+            file_name = os.path.basename(file_path)
             # Add metadata to chunks
             for i, chunk in enumerate(chunks):
                 chunk.metadata['source'] = file_path
                 chunk.metadata['chunk_id'] = i
+                chunk.metadata['file_name'] = file_name
                 chunk.metadata['timestamp'] = timestamp
             # Add documents to the vector store
             self.vector_store.add_documents(documents=chunks)
@@ -59,7 +60,7 @@ class DocumentProcessor:
             
             return {
                 "file_path": file_path,
-                "file_name": os.path.basename(file_path),
+                "file_name": file_name,
                 "num_chunks": len(chunks),
                 "vector_store_size": len(self.vector_store.get()),
             }
