@@ -17,7 +17,7 @@ class DocumentQuery:
         self.vector_store = vector_store
         self.llm = llm
 
-    def query(self, question: str, documents: list[str] = None, chat_history: list[str] = None) -> dict:
+    def query(self, question: str, documents: list[str] = None) -> dict:
         try:
             search_kwargs = {"k": 3}
             if documents:
@@ -36,14 +36,17 @@ class DocumentQuery:
             You are an AI assistant that can answer questions about the provided context.
             Try to answer the question. You may reference the source documents.
             Context: {context}
-            Question: {question}
-            Answer:"""
+            Human: {question}
+            AI Assistant:"""
 
             prompt = ChatPromptTemplate.from_template(prompt_template)
 
-            # Create the retrieval chain
+            # Create the retrieval chain with memory
             retrieval_chain = (
-                {"context": retriever, "question": RunnablePassthrough()}
+                {
+                    "context": retriever,
+                    "question": RunnablePassthrough()
+                }
                 | prompt
                 | self.llm
                 | StrOutputParser()
