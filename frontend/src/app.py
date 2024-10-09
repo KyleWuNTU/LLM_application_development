@@ -23,15 +23,39 @@ def initialize_session_state():
     if "available_documents" not in st.session_state:
         st.session_state.available_documents = fetch_available_documents()
 
-st.title("RAG Application")
+# Set page configuration
+st.set_page_config(page_title="RAG Application for Document Retrieval", page_icon="🤖", layout="wide")
+
+# Custom CSS
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #f0f2f6;
+    }
+    .stButton>button {
+        border-radius: 20px;
+    }
+    .stTextInput>div>div>input {
+        border-radius: 20px;
+    }
+    .stHeader {
+        background-color: #4e8cff;
+        color: white;
+        padding: 1rem;
+        border-radius: 10px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.title("🤖 RAG Application")
 
 initialize_session_state()
 
-# Document selection
-st.sidebar.header("Document Selection")
+# Sidebar
+st.sidebar.header("📁 Document Selection")
 
 # Add a refresh button
-if st.sidebar.button("Refresh Document List"):
+if st.sidebar.button("🔄 Refresh Document List", key="refresh_button"):
     st.session_state.available_documents = fetch_available_documents()
     st.rerun()
 
@@ -45,7 +69,8 @@ selected_documents = st.sidebar.multiselect(
 logger.info(f"Selected documents: {selected_documents}")
 
 # File upload section
-uploaded_file = st.file_uploader("Choose a file", type=["txt", "pdf"], accept_multiple_files=True)
+st.sidebar.header("📤 Upload Documents")
+uploaded_file = st.sidebar.file_uploader("Choose a file", type=["txt", "pdf"], accept_multiple_files=True)
 
 if uploaded_file is not None:
     files_processed = False
@@ -56,24 +81,24 @@ if uploaded_file is not None:
             if response.status_code == 200:
                 result = response.json()
                 if result.get('is_new_file', True):
-                    st.success(f"File {result['filename']} uploaded and processed successfully!")
+                    st.sidebar.success(f"✅ File {result['filename']} uploaded and processed successfully!")
                 else:
-                    st.warning(f"File {result['filename']} has been overwritten and reprocessed.")
-                st.info(f"Number of chunks: {result['num_chunks']}")
-                st.info(f"Vector store size: {result['vector_store_size']}")
+                    st.sidebar.warning(f"⚠️ File {result['filename']} has been overwritten and reprocessed.")
+                st.sidebar.info(f"📊 Number of chunks: {result['num_chunks']}")
+                st.sidebar.info(f"📈 Vector store size: {result['vector_store_size']}")
                 files_processed = True
             else:
-                st.error(f"Error uploading file {file.name}")
+                st.sidebar.error(f"❌ Error uploading file {file.name}")
 
 # Chat interface
-st.header("Chat with your documents")
+st.header("💬 Chat with your documents")
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if "sources" in message:
-            st.info(f"Sources: {', '.join(message['sources'])}")
+            st.info(f"📚 Sources: {', '.join(message['sources'])}")
 
 # React to user input
 if prompt := st.chat_input("What would you like to know?"):
@@ -83,7 +108,8 @@ if prompt := st.chat_input("What would you like to know?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     # Send user's question to the backend
-    response = requests.post(f"{BACKEND_URL}/query", json={"question": prompt, "documents": selected_documents if selected_documents else None})
+    with st.spinner("Thinking..."):
+        response = requests.post(f"{BACKEND_URL}/query", json={"question": prompt, "documents": selected_documents if selected_documents else None})
 
     if response.status_code == 200:
         result = response.json()

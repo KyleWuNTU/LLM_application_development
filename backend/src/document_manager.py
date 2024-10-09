@@ -4,6 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from .document_processor import DocumentProcessor
 from .document_query import DocumentQuery
 from langchain_openai import ChatOpenAI
+from collections import deque
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,14 +16,16 @@ class DocumentManager:
         vector_store_path = os.path.join(backend_dir, "chroma_langchain_db")
         os.makedirs(vector_store_path, exist_ok=True)
         
-        # Initialize the embeddings, vector store, and llm
+        # Initialize the embeddings, vector store, llm, and conversation history
         self.embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
         self.vector_store = Chroma(collection_name="rag_collection", persist_directory=vector_store_path, embedding_function=self.embeddings)
         self.llm = ChatOpenAI(model_name="gpt-4o")
+        self.conversation_history = deque()
+        self.conversation_history_limit = 5
         
         # Initialize document processor and query with the same vector store
         self.document_processor = DocumentProcessor(self.vector_store, self.llm)
-        self.document_query = DocumentQuery(self.vector_store, self.llm)
+        self.document_query = DocumentQuery(self.vector_store, self.llm, self.conversation_history, self.conversation_history_limit)
 
     def _load_existing_documents(self) -> list[str]:
         # Retrieve only the metadatas from the vector store
