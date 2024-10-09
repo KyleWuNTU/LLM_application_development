@@ -1,0 +1,33 @@
+# Environment files
+*.env
+
+# Python-related files
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Database files
+*.db
+*.sqlite
+
+# Chroma database
+backend/chroma_langchain_db/
+
+# Uploaded files
+backend/uploads/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Docker-related
+.dockerignore
